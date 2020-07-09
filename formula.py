@@ -3,6 +3,9 @@ import math
 def ph(h_plus):
     return -math.log10(h_plus)
 
+def residence_time(Vriv,Criv,Vocean,Cocean):
+    return (Vocean*Cocean)/(Vriv*Criv)
+
 def h_plus(ph):
     return math.pow(10,-ph)
 
@@ -15,7 +18,7 @@ def CO3(ALK,DIC):
 def pCO2(k0,k1,k2,ALK,DIC):
     return (k2*math.pow(2*(DIC-ALK),2))/(k0*k1*(ALK-DIC))
 
-def Omega(Ca,CO3,ksp):
+def saturation_state(Ca,CO3,ksp):
     return (Ca*CO3)/ksp
 
 def ph2(k2,ALK,DIC):
@@ -36,7 +39,7 @@ def Michaelis_Menten(Vmax,Cs,Km):
 def Biological_pump(Cdeep,Csurf):
     return (Cdeep-Csurf)/Cdeep
 
-def stokes(g,viscosity,radius,density_diff):
+def stokes_sink(g,viscosity,radius,density_diff):
     return 2*g*math.pow(radius,2)*(density_diff)/(9*viscosity)
 
 def Martin(initial,z):
@@ -48,9 +51,9 @@ def GAS_LAW(p,v,n,t,r):
 def Henry(Kh,c):
     return Kh*c
 
-def AOU(T,S):
+def AOU(T,S,O2):
     return math.exp(177.7888 + 255.5907 /(T/100) + 146.4813* math.log(T/100,math.e)-22.204 * (T/ S*( 0.037362 +
-            (T/100)* (0.016504-0.0020564 * T/100)))* 1000/22.392)
+            (T/100)* (0.016504-0.0020564 * T/100)))* 1000/22.392)-O2
 
 def multiplicative_nutrient(Vmax,Fe,Si,Kmfe,Kmsi):
     return Vmax*(Fe/(Kmfe+Fe))*(Si/(Kmsi+Si))
@@ -73,8 +76,13 @@ def mean_life(Lambda):
 def half_life(Lambda):
     return math.log(2,math.e)/Lambda
 
-def free_metal(Ctotal,logbeta_list,C_list):
-    a = 1
-    for i in range(len(logbeta_list)):
-        a += math.pow(10,logbeta_list[i])*C_list[i]
-    return Ctotal/a/Ctotal
+def free_metal(Ctotal,logbeta_list,C_list,EDTA,Rinorganic):
+    count = 1
+    count += C_list[0]*logbeta_list[0]
+    count += math.pow(C_list[0],2)*logbeta_list[1]
+    count += C_list[1]*math.pow(10,logbeta_list[2])
+    count += C_list[2]*math.pow(10,logbeta_list[3])
+    Y4 = EDTA/count
+    result = Ctotal/(math.pow(10,Rinorganic)+math.pow(10,logbeta_list[4])*Y4)
+    ratio = result/Ctotal*100
+    return result,ratio
